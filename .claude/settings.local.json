@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(curl:*)",
+      "Bash(do:*)",
+      "WebFetch(domain:www.fancycomponents.dev)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:fonts.google.com)",
+      "WebFetch(domain:noonnu.cc)"
+    ]
+  }
+}
