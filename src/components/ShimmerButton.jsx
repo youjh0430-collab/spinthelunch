@@ -28,9 +28,10 @@ const ShimmerButton = forwardRef(
           '--speed': shimmerDuration,
           '--cut': shimmerSize,
           '--bg': background,
+          fontFamily: "'GmarketSans', sans-serif",
+          fontWeight: 700,
         }}
         className={`group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-16 py-6 text-3xl font-bold text-white [background:var(--bg)] [border-radius:var(--radius)] transform-gpu transition-transform duration-300 ease-in-out active:translate-y-px ${className}`}
-        style={{ fontFamily: "'GmarketSans', sans-serif", fontWeight: 700 }}
         ref={ref}
         {...props}
       >
