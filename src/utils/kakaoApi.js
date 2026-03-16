@@ -153,14 +153,16 @@ export async function searchRestaurants({ lat, lng, radius, categories }) {
 }
 
 /**
- * 주소 → 좌표 변환 (수동 위치 입력용)
- * @param {string} address - 검색할 주소
+ * 주소 또는 장소명 → 좌표 변환 (수동 위치 입력용)
+ * 정식 주소 검색 실패 시 키워드 검색으로 fallback하여 장소명도 지원
+ * @param {string} address - 검색할 주소 또는 장소명 (예: "강남역", "서울시 강남구")
  * @returns {{ lat: number, lng: number } | null}
  */
 export async function searchAddress(address) {
   const geocoder = getGeocoder();
 
-  return new Promise((resolve, reject) => {
+  // 1차: 정식 주소 검색
+  const addressResult = await new Promise((resolve, reject) => {
     geocoder.addressSearch(address, (result, status) => {
       if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
         resolve({ lat: Number(result[0].y), lng: Number(result[0].x) });
@@ -168,6 +170,23 @@ export async function searchAddress(address) {
         resolve(null);
       } else {
         reject(new Error('주소 검색에 실패했어요.'));
+      }
+    });
+  });
+
+  if (addressResult) return addressResult;
+
+  // 2차: 장소명 키워드 검색 fallback ("강남역" 같은 입력 지원)
+  const places = getPlaces();
+
+  return new Promise((resolve, reject) => {
+    places.keywordSearch(address, (data, status) => {
+      if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+        resolve({ lat: Number(data[0].y), lng: Number(data[0].x) });
+      } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
+        resolve(null);
+      } else {
+        reject(new Error('장소 검색에 실패했어요.'));
       }
     });
   });
