@@ -1,41 +1,98 @@
 /**
- * Role: 카카오 로컬 REST API 호출 함수
+ * Role: 카카오 JavaScript SDK 기반 장소 검색 함수
  * Key Features: 키워드 검색 + 카테고리 검색 병행, 주소 → 좌표 변환
- * Dependencies: categories.js
- * Notes: 세부 카테고리(분식, 카페 등)는 카테고리 검색에서 누락되는 경우가 많아
- *        키워드 검색을 병행하여 정확도를 높임
+ * Dependencies: categories.js, 카카오맵 JavaScript SDK (index.html에서 로드)
+ * Notes: REST API 대신 JavaScript SDK를 사용하여 CORS 문제 없이 정적 호스팅에서도 동작
  */
 
 import { CATEGORIES } from './categories';
 import { MAX_RESULTS } from '../constants';
 
-const REST_KEY = import.meta.env.VITE_KAKAO_REST_KEY;
-// 개발 환경에서는 Vite 프록시 사용, 프로덕션에서는 카카오 API 직접 호출
-const API_BASE = import.meta.env.DEV
-  ? '/kakao-api/v2/local'
-  : 'https://dapi.kakao.com/v2/local';
-
-/** 공통 fetch 래퍼 — Authorization 헤더 자동 추가 */
-async function kakaoFetch(path, params) {
-  const url = `${API_BASE}${path}?${new URLSearchParams(params)}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `KakaoAK ${REST_KEY}` },
-  });
-
-  if (!res.ok) {
-    throw new Error(`카카오 API 호출 실패 (${res.status})`);
+/** SDK의 Places 서비스 인스턴스를 지연 생성 */
+function getPlaces() {
+  if (!window.kakao?.maps?.services) {
+    throw new Error('카카오맵 SDK가 아직 로드되지 않았어요.');
   }
+  return new window.kakao.maps.services.Places();
+}
 
-  return res.json();
+/** SDK의 Geocoder 서비스 인스턴스를 지연 생성 */
+function getGeocoder() {
+  if (!window.kakao?.maps?.services) {
+    throw new Error('카카오맵 SDK가 아직 로드되지 않았어요.');
+  }
+  return new window.kakao.maps.services.Geocoder();
+}
+
+/** SDK 콜백을 Promise로 변환하는 헬퍼 */
+function searchByCategory(places, code, { lat, lng, radius, page = 1 }) {
+  return new Promise((resolve, reject) => {
+    places.categorySearch(
+      code,
+      (data, status, pagination) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          resolve({ documents: data, isEnd: pagination.is_end });
+        } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
+          resolve({ documents: [], isEnd: true });
+        } else {
+          reject(new Error(`카테고리 검색 실패 (${status})`));
+        }
+      },
+      {
+        location: new window.kakao.maps.LatLng(lat, lng),
+        radius,
+        sort: window.kakao.maps.services.SortBy.DISTANCE,
+        size: 15,
+        page,
+      }
+    );
+  });
+}
+
+/** 키워드 검색을 Promise로 변환 */
+function searchByKeyword(places, keyword, { lat, lng, radius, page = 1, categoryCode }) {
+  return new Promise((resolve, reject) => {
+    places.keywordSearch(
+      keyword,
+      (data, status, pagination) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          resolve({ documents: data, isEnd: pagination.is_end });
+        } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
+          resolve({ documents: [], isEnd: true });
+        } else {
+          reject(new Error(`키워드 검색 실패 (${status})`));
+        }
+      },
+      {
+        location: new window.kakao.maps.LatLng(lat, lng),
+        radius,
+        sort: window.kakao.maps.services.SortBy.DISTANCE,
+        size: 15,
+        page,
+        category_group_code: categoryCode,
+      }
+    );
+  });
 }
 
 /** 페이지 순회하며 결과 수집 (최대 3페이지) */
-async function fetchPages(path, baseParams) {
+async function fetchCategoryPages(places, code, options) {
   const results = [];
   for (let page = 1; page <= 3; page++) {
-    const data = await kakaoFetch(path, { ...baseParams, page });
-    results.push(...data.documents);
-    if (data.meta.is_end) break;
+    const { documents, isEnd } = await searchByCategory(places, code, { ...options, page });
+    results.push(...documents);
+    if (isEnd) break;
+  }
+  return results;
+}
+
+/** 키워드 검색 페이지 순회 (최대 3페이지) */
+async function fetchKeywordPages(places, keyword, options) {
+  const results = [];
+  for (let page = 1; page <= 3; page++) {
+    const { documents, isEnd } = await searchByKeyword(places, keyword, { ...options, page });
+    results.push(...documents);
+    if (isEnd) break;
   }
   return results;
 }
@@ -46,6 +103,7 @@ async function fetchPages(path, baseParams) {
  * - 세부 카테고리 선택: 키워드 검색으로 정확한 결과 확보
  */
 export async function searchRestaurants({ lat, lng, radius, categories }) {
+  const places = getPlaces();
   const selectedCats = categories.length > 0
     ? CATEGORIES.filter(c => categories.includes(c.id))
     : [];
@@ -54,15 +112,7 @@ export async function searchRestaurants({ lat, lng, radius, categories }) {
 
   if (selectedCats.length === 0) {
     // 전체 검색 — 카테고리 검색(FD6)으로 음식점 전체 조회
-    allResults = await fetchPages('/search/category.json', {
-      category_group_code: 'FD6',
-      x: lng,
-      y: lat,
-      radius,
-      sort: 'distance',
-      size: 15,
-    });
-
+    allResults = await fetchCategoryPages(places, 'FD6', { lat, lng, radius });
     allResults.sort((a, b) => Number(a.distance) - Number(b.distance));
     return allResults.slice(0, MAX_RESULTS);
   }
@@ -70,23 +120,17 @@ export async function searchRestaurants({ lat, lng, radius, categories }) {
   // 세부 카테고리 선택 — 카테고리별 균등 할당
   const perCatLimit = Math.ceil(MAX_RESULTS / selectedCats.length);
   const seen = new Set();
-
-  // 카테고리별로 결과를 따로 모은 뒤, 각각 할당량만큼만 유지
   const buckets = [];
 
   for (const cat of selectedCats) {
-    const groupCode = cat.kakaoCode;
     const bucket = [];
 
     for (const keyword of cat.keywords) {
-      const results = await fetchPages('/search/keyword.json', {
-        query: keyword,
-        x: lng,
-        y: lat,
+      const results = await fetchKeywordPages(places, keyword, {
+        lat,
+        lng,
         radius,
-        sort: 'distance',
-        size: 15,
-        category_group_code: groupCode,
+        categoryCode: cat.kakaoCode,
       });
 
       for (const r of results) {
@@ -102,15 +146,6 @@ export async function searchRestaurants({ lat, lng, radius, categories }) {
     buckets.push(bucket.slice(0, perCatLimit));
   }
 
-  // 할당량을 못 채운 카테고리의 남은 자리를 다른 카테고리에 재분배
-  const totalSlots = MAX_RESULTS;
-  let filled = buckets.reduce((sum, b) => sum + b.length, 0);
-
-  if (filled < totalSlots) {
-    // 여유 슬롯이 있으면, 원본에서 더 가져올 수 있는 카테고리에 재분배
-    // (이미 slice된 결과를 사용하므로 현재 구조에서는 추가 fetch 불필요)
-  }
-
   // 모든 버킷 병합 후 거리순 정렬
   allResults = buckets.flat();
   allResults.sort((a, b) => Number(a.distance) - Number(b.distance));
@@ -123,12 +158,17 @@ export async function searchRestaurants({ lat, lng, radius, categories }) {
  * @returns {{ lat: number, lng: number } | null}
  */
 export async function searchAddress(address) {
-  const data = await kakaoFetch('/search/address.json', { query: address });
+  const geocoder = getGeocoder();
 
-  if (data.documents.length === 0) {
-    return null;
-  }
-
-  const { y, x } = data.documents[0];
-  return { lat: Number(y), lng: Number(x) };
+  return new Promise((resolve, reject) => {
+    geocoder.addressSearch(address, (result, status) => {
+      if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
+        resolve({ lat: Number(result[0].y), lng: Number(result[0].x) });
+      } else if (status === window.kakao.maps.services.Status.ZERO_RESULT || result.length === 0) {
+        resolve(null);
+      } else {
+        reject(new Error('주소 검색에 실패했어요.'));
+      }
+    });
+  });
 }
