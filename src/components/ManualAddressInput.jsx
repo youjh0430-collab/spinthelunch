@@ -49,7 +49,7 @@ export default function ManualAddressInput({ onLocationSet }) {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="예: 강남역, 서울시 강남구 역삼동"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
             aria-label="주소 입력"
           />
 
