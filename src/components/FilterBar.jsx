@@ -13,6 +13,7 @@ export default function FilterBar({
   onRadiusChange,
   onListClick,
   excludedCount,
+  onLocationChange,
 }) {
   // 카테고리 토글
   const toggleCategory = (id) => {
@@ -73,6 +74,19 @@ export default function FilterBar({
             </option>
           ))}
         </select>
+
+        {/* 지역 변경 버튼 */}
+        <button
+          onClick={onLocationChange}
+          className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 transition-colors min-h-[36px] flex items-center gap-1"
+          aria-label="지역 변경"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+          </svg>
+          지역변경
+        </button>
 
         {/* 리스트 보기 버튼 */}
         <button

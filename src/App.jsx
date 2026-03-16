@@ -42,6 +42,9 @@ export default function App() {
   const [previewRestaurants, setPreviewRestaurants] = useState([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
+  // 지역 변경 모달
+  const [showLocationChange, setShowLocationChange] = useState(false);
+
   // UI 단계: idle | spinning | result | few-results
   const [phase, setPhase] = useState('idle');
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -130,6 +133,22 @@ export default function App() {
     setSelectedRestaurant(null);
   }, []);
 
+  // 지역 변경 핸들러 — 기존 상태 초기화 후 수동 입력 모달 표시
+  const handleLocationChange = useCallback(() => {
+    setShowLocationChange(true);
+  }, []);
+
+  // 지역 변경 완료 핸들러
+  const handleLocationChangeComplete = useCallback((newLocation) => {
+    setManualLocation(newLocation);
+    setShowLocationChange(false);
+    // 지역 변경 시 기존 검색 결과 초기화
+    setRestaurants([]);
+    setSelectedRestaurant(null);
+    setExcludedIds(new Set());
+    setPhase('idle');
+  }, []);
+
   // 위치 권한 거부 + 수동 입력이 필요한 상태
   const needManualInput = !locationLoading && !location && locationError;
 
@@ -165,6 +184,7 @@ export default function App() {
           onRadiusChange={setRadius}
           onListClick={handleListClick}
           excludedCount={excludedIds.size}
+          onLocationChange={handleLocationChange}
         />
       )}
 
@@ -211,6 +231,21 @@ export default function App() {
           restaurants={restaurants}
           onClose={handleCloseResult}
         />
+      )}
+
+      {/* 지역 변경 모달 */}
+      {showLocationChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-full max-w-[400px] mx-4">
+            <button
+              onClick={() => setShowLocationChange(false)}
+              className="absolute -top-10 right-0 text-white text-sm hover:underline"
+            >
+              닫기
+            </button>
+            <ManualAddressInput onLocationSet={handleLocationChangeComplete} />
+          </div>
+        </div>
       )}
 
       {/* 식당 리스트 모달 */}
