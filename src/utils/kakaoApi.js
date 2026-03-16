@@ -10,7 +10,10 @@ import { CATEGORIES } from './categories';
 import { MAX_RESULTS } from '../constants';
 
 const REST_KEY = import.meta.env.VITE_KAKAO_REST_KEY;
-const API_BASE = '/kakao-api/v2/local';
+// 개발 환경에서는 Vite 프록시 사용, 프로덕션에서는 카카오 API 직접 호출
+const API_BASE = import.meta.env.DEV
+  ? '/kakao-api/v2/local'
+  : 'https://dapi.kakao.com/v2/local';
 
 /** 공통 fetch 래퍼 — Authorization 헤더 자동 추가 */
 async function kakaoFetch(path, params) {
