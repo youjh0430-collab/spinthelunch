@@ -24,7 +24,7 @@ export default function HeroOverlay({ onStart, loading }) {
       >
         <h1
           className="text-5xl md:text-7xl text-white drop-shadow-lg tracking-tighter"
-          style={{ fontFamily: "'EF_jejudoldam', sans-serif" }}
+          style={{ fontFamily: "'GmarketSans', sans-serif", fontWeight: 300 }}
         >
           오늘 뭐 먹지?
         </h1>
