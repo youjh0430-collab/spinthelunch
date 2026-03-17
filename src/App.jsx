@@ -10,7 +10,8 @@ import { searchRestaurants } from './utils/kakaoApi';
 import { DEFAULT_RADIUS } from './constants';
 import KakaoMap from './components/KakaoMap';
 import FilterBar from './components/FilterBar';
-import SlotMachine from './components/SlotMachine';
+import SlotMachineGlass from './components/SlotMachineGlass';
+import SlotMachineReceipt from './components/SlotMachineReceipt';
 import ResultCard from './components/ResultCard';
 import ManualAddressInput from './components/ManualAddressInput';
 import ErrorMessage from './components/ErrorMessage';
@@ -49,6 +50,9 @@ export default function App() {
   const [phase, setPhase] = useState('idle');
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [lastResult, setLastResult] = useState(null);
+
+  // 임시 A/B 테스트용 슬롯 테마 토글 상태 ('glass' | 'receipt')
+  const [slotTheme, setSlotTheme] = useState('glass');
 
   // 리스트 아이콘 클릭 — 미리보기 검색 후 모달 표시
   const handleListClick = useCallback(async () => {
@@ -154,6 +158,22 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full bg-gray-100">
+      {/* 임시 토글 버튼 (A/B 테스트용) */}
+      <div className="absolute top-4 left-4 z-[100] bg-white rounded-full shadow-lg p-1 flex gap-1 border border-gray-200">
+        <button
+          onClick={() => setSlotTheme('glass')}
+          className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${slotTheme === 'glass' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+        >
+          시안 2 (글래스)
+        </button>
+        <button
+          onClick={() => setSlotTheme('receipt')}
+          className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${slotTheme === 'receipt' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+        >
+          시안 3 (영수증)
+        </button>
+      </div>
+
       {/* 배경 지도 */}
       {isMapLoaded && currentLocation && (
         <KakaoMap
@@ -206,14 +226,23 @@ export default function App() {
         />
       )}
 
-      {/* 슬롯머신 모달 */}
+      {/* 슬롯머신 모달 (조건부 랜더링) */}
       {phase === 'spinning' && (
-        <SlotMachine
-          restaurants={restaurants}
-          lastResult={lastResult}
-          onComplete={handleSlotComplete}
-          onClose={handleCloseResult}
-        />
+        slotTheme === 'glass' ? (
+          <SlotMachineGlass
+            restaurants={restaurants}
+            lastResult={lastResult}
+            onComplete={handleSlotComplete}
+            onClose={handleCloseResult}
+          />
+        ) : (
+          <SlotMachineReceipt
+            restaurants={restaurants}
+            lastResult={lastResult}
+            onComplete={handleSlotComplete}
+            onClose={handleCloseResult}
+          />
+        )
       )}
 
       {/* 결과 카드 */}
