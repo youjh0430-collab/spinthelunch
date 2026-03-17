@@ -12,7 +12,7 @@ export default function FilterBar({
   radius,
   onRadiusChange,
   onListClick,
-  excludedCount,
+  includedCount,
   onLocationChange,
 }) {
   // 카테고리 토글
@@ -98,10 +98,10 @@ export default function FilterBar({
           <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
-          {/* 제외된 식당 수 뱃지 */}
-          {excludedCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              {excludedCount}
+          {/* 포함된 식당 수 뱃지 — 리스트를 한 번이라도 열어야 표시 */}
+          {includedCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+              {includedCount}
             </span>
           )}
         </button>

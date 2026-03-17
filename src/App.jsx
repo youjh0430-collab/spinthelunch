@@ -203,7 +203,7 @@ export default function App() {
           radius={radius}
           onRadiusChange={setRadius}
           onListClick={handleListClick}
-          excludedCount={excludedIds.size}
+          includedCount={previewRestaurants.length > 0 ? previewRestaurants.length - excludedIds.size : 0}
           onLocationChange={handleLocationChange}
         />
       )}
