@@ -9,10 +9,14 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
-  const { query } = req.query;
+  const { query, blogQuery, imageQuery } = req.query;
 
-  if (!query) {
-    return res.status(400).json({ error: '검색어(query)가 필요합니다.' });
+  // blogQuery/imageQuery 분리 방식 또는 기존 query 단일 방식 모두 지원
+  const finalBlogQuery = blogQuery || query;
+  const finalImageQuery = imageQuery || query;
+
+  if (!finalBlogQuery && !finalImageQuery) {
+    return res.status(400).json({ error: '검색어(query 또는 blogQuery/imageQuery)가 필요합니다.' });
   }
 
   // 환경변수 누락 시 명확한 에러 반환
@@ -26,14 +30,14 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 블로그 검색 + 이미지 검색 병렬 호출
+    // 블로그 검색 + 이미지 검색 병렬 호출 — 각각 최적화된 쿼리 사용
     const [blogRes, imageRes] = await Promise.all([
       fetch(
-        `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}&display=2&sort=sim`,
+        `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(finalBlogQuery)}&display=2&sort=sim`,
         { headers }
       ),
       fetch(
-        `https://openapi.naver.com/v1/search/image.json?query=${encodeURIComponent(query)}&display=3&sort=sim`,
+        `https://openapi.naver.com/v1/search/image.json?query=${encodeURIComponent(finalImageQuery)}&display=3&sort=sim`,
         { headers }
       ),
     ]);

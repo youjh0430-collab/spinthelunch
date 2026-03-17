@@ -19,11 +19,18 @@ export default function ResultCard({ restaurant, onClose, onRespin }) {
   // 카테고리에서 세부 분류만 추출 (예: "음식점 > 한식 > 칼국수" → "칼국수")
   const subCategory = restaurant.category_name?.split(' > ').pop() || '';
 
-  // 식당명 + 지역으로 네이버 검색
+  // 식당명 + 동이름으로 네이버 검색 — 지번 주소에서 동 추출 (블로그에서 더 많이 쓰이는 표현)
   useEffect(() => {
-    const searchQuery = `${restaurant.place_name} ${restaurant.road_address_name?.split(' ').slice(0, 2).join(' ') || ''}`;
+    // 지번 주소에서 동 이름 추출 (예: "서울 강남구 역삼동 123-45" → "역삼동")
+    const addrParts = restaurant.address_name?.split(' ') || [];
+    const dong = addrParts.find(p => /[동면읍리]$/.test(p)) || '';
 
-    fetch(`/api/naver-search?query=${encodeURIComponent(searchQuery)}`)
+    // 블로그: 식당명 + 동이름 (따옴표 없이 — 정확 매칭이 너무 엄격하면 0건 나옴)
+    const blogQuery = `${restaurant.place_name} ${dong} 맛집 리뷰`;
+    // 이미지: 식당명 + 동이름 (음식 키워드 대신 동이름으로 특정 매장 정확도 향상)
+    const imageQuery = `${restaurant.place_name} ${dong}`;
+
+    fetch(`/api/naver-search?blogQuery=${encodeURIComponent(blogQuery)}&imageQuery=${encodeURIComponent(imageQuery)}`)
       .then((res) => res.json())
       .then((data) => {
         setImages(data.images || []);
