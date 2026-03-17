@@ -12,6 +12,7 @@ import KakaoMap from './components/KakaoMap';
 import FilterBar from './components/FilterBar';
 import SlotMachineGlass from './components/SlotMachineGlass';
 import SlotMachineReceipt from './components/SlotMachineReceipt';
+import SlotMachine from './components/SlotMachine';
 import ResultCard from './components/ResultCard';
 import ManualAddressInput from './components/ManualAddressInput';
 import ErrorMessage from './components/ErrorMessage';
@@ -51,8 +52,8 @@ export default function App() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [lastResult, setLastResult] = useState(null);
 
-  // 임시 A/B 테스트용 슬롯 테마 토글 상태 ('glass' | 'receipt')
-  const [slotTheme, setSlotTheme] = useState('glass');
+  // 임시 A/B 테스트용 슬롯 테마 토글 상태 ('glass' | 'receipt' | 'samcheop')
+  const [slotTheme, setSlotTheme] = useState('samcheop');
 
   // 리스트 아이콘 클릭 — 미리보기 검색 후 모달 표시
   const handleListClick = useCallback(async () => {
@@ -172,6 +173,12 @@ export default function App() {
         >
           시안 3 (영수증)
         </button>
+        <button
+          onClick={() => setSlotTheme('samcheop')}
+          className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${slotTheme === 'samcheop' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+        >
+          시안 4 (삼첩분식)
+        </button>
       </div>
 
       {/* 배경 지도 */}
@@ -235,8 +242,15 @@ export default function App() {
             onComplete={handleSlotComplete}
             onClose={handleCloseResult}
           />
-        ) : (
+        ) : slotTheme === 'receipt' ? (
           <SlotMachineReceipt
+            restaurants={restaurants}
+            lastResult={lastResult}
+            onComplete={handleSlotComplete}
+            onClose={handleCloseResult}
+          />
+        ) : (
+          <SlotMachine
             restaurants={restaurants}
             lastResult={lastResult}
             onComplete={handleSlotComplete}

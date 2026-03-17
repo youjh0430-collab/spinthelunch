@@ -94,3 +94,20 @@ html, body, #root {
 .animate-spin-around {
   animation: spin-around calc(var(--speed) * 2) infinite linear;
 }
+
+/* Casino border light animation */
+@keyframes casino-lights {
+  0%, 100% {
+    border-color: #ffcc22;
+  }
+  40%, 60% {
+    border-color: #ffd647; /* lighter yellow */
+  }
+  50% {
+    border-color: rgba(255, 204, 34, 0.3); /* dimmed */
+  }
+}
+
+.animate-casino-lights {
+  animation: casino-lights 0.8s infinite;
+}
