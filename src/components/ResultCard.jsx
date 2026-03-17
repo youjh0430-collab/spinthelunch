@@ -1,17 +1,43 @@
 /**
  * Role: 선택된 식당 정보를 바텀시트 스타일로 표시
- * Key Features: 식당 상세 정보, 카카오맵 딥링크, 다시 돌리기
- * Dependencies: distance.js
+ * Key Features: 식당 상세 정보, 네이버 이미지/블로그 리뷰, 카카오맵 딥링크, 다시 돌리기
+ * Dependencies: distance.js, naver-search API
  */
+import { useState, useEffect } from 'react';
 import { formatDistance } from '../utils/distance';
 
+/** HTML 태그 제거 — 네이버 API 응답에 <b> 태그가 포함되어 있어서 */
+function stripHtml(str) {
+  return str?.replace(/<[^>]*>/g, '') || '';
+}
+
 export default function ResultCard({ restaurant, onClose, onRespin }) {
+  const [images, setImages] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // 카테고리에서 세부 분류만 추출 (예: "음식점 > 한식 > 칼국수" → "칼국수")
   const subCategory = restaurant.category_name?.split(' > ').pop() || '';
 
+  // 식당명 + 지역으로 네이버 검색
+  useEffect(() => {
+    const searchQuery = `${restaurant.place_name} ${restaurant.road_address_name?.split(' ').slice(0, 2).join(' ') || ''}`;
+
+    fetch(`/api/naver-search?query=${encodeURIComponent(searchQuery)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setImages(data.images || []);
+        setBlogs(data.blogs || []);
+      })
+      .catch(() => {
+        // 네이버 검색 실패해도 기본 정보는 표시
+      })
+      .finally(() => setLoading(false));
+  }, [restaurant]);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 animate-slide-up">
-      <div className="bg-white rounded-t-2xl shadow-2xl p-5 max-w-[500px] mx-auto">
+      <div className="bg-white rounded-t-2xl shadow-2xl p-5 max-w-[500px] mx-auto max-h-[80vh] overflow-y-auto">
         {/* 드래그 핸들 */}
         <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
 
@@ -45,6 +71,66 @@ export default function ResultCard({ restaurant, onClose, onRespin }) {
             )}
           </div>
         </div>
+
+        {/* 네이버 이미지 — 로딩 중이면 스켈레톤 표시 */}
+        <div className="mt-4">
+          {loading ? (
+            <div className="flex gap-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="w-1/3 aspect-square bg-gray-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : images.length > 0 ? (
+            <div className="flex gap-2 overflow-x-auto">
+              {images.map((img, i) => (
+                <a
+                  key={i}
+                  href={img.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 w-1/3"
+                >
+                  <img
+                    src={img.thumbnail}
+                    alt={stripHtml(img.title)}
+                    className="w-full aspect-square object-cover rounded-lg"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        {/* 네이버 블로그 리뷰 */}
+        {!loading && blogs.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">블로그 리뷰</p>
+            {blogs.map((blog, i) => (
+              <a
+                key={i}
+                href={blog.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <p className="text-sm font-semibold text-gray-800 line-clamp-1">
+                  {stripHtml(blog.title)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {stripHtml(blog.description)}
+                </p>
+                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                  <span>{blog.bloggername}</span>
+                  <span>·</span>
+                  <span>
+                    {blog.postdate?.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3')}
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* 액션 버튼 */}
         <div className="flex gap-3 mt-5">
