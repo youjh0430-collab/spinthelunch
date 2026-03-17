@@ -15,6 +15,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: '검색어(query)가 필요합니다.' });
   }
 
+  // 환경변수 누락 시 명확한 에러 반환
+  if (!process.env.NAVER_CLIENT_ID || !process.env.NAVER_CLIENT_SECRET) {
+    return res.status(500).json({ error: '네이버 API 키가 설정되지 않았습니다. 환경변수를 확인하세요.' });
+  }
+
   const headers = {
     'X-Naver-Client-Id': process.env.NAVER_CLIENT_ID,
     'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET,

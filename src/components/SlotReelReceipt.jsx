@@ -14,12 +14,12 @@ export default function SlotReel({ items, finalItem, isSpinning, onStop }) {
   // 긴 릴 생성 (4회 반복)
   const extendedItems = [...items, ...items, ...items, ...items];
 
-  // 최종 아이템의 인덱스 (마지막 반복 세트에서 찾기)
-  const finalIndexInLastSet = items.findIndex(
-    item => item.id === finalItem?.id,
-  );
+  // 최종 아이템의 인덱스 (마지막 반복 세트에서 찾기, -1 방어)
+  const finalIndexInLastSet = finalItem
+    ? items.findIndex(item => item.id === finalItem.id)
+    : 0;
   // 3번째 반복 세트의 해당 위치에 정지 (충분한 회전 보장)
-  const stopIndex = items.length * 3 + finalIndexInLastSet;
+  const stopIndex = items.length * 3 + Math.max(0, finalIndexInLastSet);
 
   useEffect(() => {
     if (!isSpinning || !finalItem) return;
