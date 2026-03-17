@@ -1,9 +1,9 @@
 /**
  * Role: 슬롯 대상 식당 리스트 모달 — 제외할 식당을 선택할 수 있는 UI
- * Key Features: 식당 목록 표시, 개별 제외 토글, 전체 선택/해제
+ * Key Features: 식당 목록 표시, 개별 제외 토글, 전체 선택/해제, 적용하기/취소 분리
  * Dependencies: distance.js
  */
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { formatDistance } from '../utils/distance';
 
 export default function RestaurantListModal({
@@ -13,16 +13,19 @@ export default function RestaurantListModal({
   onClose,
   loading,
 }) {
+  // 임시 제외 상태 — 적용하기 전까지 원본에 영향 없음
+  const [tempExcludedIds, setTempExcludedIds] = useState(() => new Set(excludedIds));
+
   // 거리순(가까운순) 정렬
   const sortedRestaurants = useMemo(
     () => [...restaurants].sort((a, b) => Number(a.distance) - Number(b.distance)),
     [restaurants]
   );
-  const includedCount = restaurants.length - excludedIds.size;
+  const includedCount = restaurants.length - tempExcludedIds.size;
 
   // 개별 식당 토글
   const toggleExclude = (id) => {
-    const next = new Set(excludedIds);
+    const next = new Set(tempExcludedIds);
     if (next.has(id)) {
       next.delete(id);
     } else {
@@ -30,12 +33,23 @@ export default function RestaurantListModal({
       if (includedCount <= 3) return;
       next.add(id);
     }
-    onExcludedChange(next);
+    setTempExcludedIds(next);
   };
 
   // 전체 선택 (제외 초기화)
   const selectAll = () => {
-    onExcludedChange(new Set());
+    setTempExcludedIds(new Set());
+  };
+
+  // 적용하기 — 임시 상태를 실제로 반영
+  const handleApply = () => {
+    onExcludedChange(tempExcludedIds);
+    onClose();
+  };
+
+  // 취소 — 변경사항 버리고 닫기
+  const handleCancel = () => {
+    onClose();
   };
 
   return (
@@ -48,7 +62,7 @@ export default function RestaurantListModal({
               슬롯 대상 식당
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleCancel}
               className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
               aria-label="닫기"
             >
@@ -88,7 +102,7 @@ export default function RestaurantListModal({
           )}
 
           {!loading && sortedRestaurants.map(r => {
-            const isExcluded = excludedIds.has(r.id);
+            const isExcluded = tempExcludedIds.has(r.id);
             const subCategory = r.category_name?.split(' > ').slice(1).join(' > ') || '';
 
             return (
@@ -137,6 +151,18 @@ export default function RestaurantListModal({
         {!loading && includedCount <= 3 && restaurants.length > 3 && (
           <div className="px-4 py-2 bg-orange-50 text-xs text-orange-600 text-center shrink-0">
             슬롯머신을 돌리려면 최소 3개 이상 포함해야 해요
+          </div>
+        )}
+
+        {/* 적용하기 버튼 */}
+        {!loading && restaurants.length > 0 && (
+          <div className="p-4 border-t border-gray-100 shrink-0">
+            <button
+              onClick={handleApply}
+              className="w-full py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors min-h-[48px]"
+            >
+              {includedCount}개 식당 적용하기
+            </button>
           </div>
         )}
       </div>
