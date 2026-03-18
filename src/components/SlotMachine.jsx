@@ -37,40 +37,39 @@ export default function SlotMachine({ restaurants, lastResult, onComplete, onClo
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 flex flex-col items-center justify-center p-4 font-sans backdrop-blur-sm">
-      <div className="relative w-full max-w-[380px] mt-8">
-        <div className="relative z-10 w-full mb-8">
+      <div className="relative w-full max-w-[380px] mt-4 sm:mt-8">
+        <div className="relative z-10 w-full mb-4 sm:mb-8">
           {/* 레버 (오른쪽 부착) */}
-          <div className="absolute -right-8 top-16 w-10 h-32 z-0 sm:-right-10" style={{ perspective: '800px' }}>
+          <div className="absolute -right-6 sm:-right-8 top-16 w-8 sm:w-10 h-24 sm:h-32 z-0" style={{ perspective: '800px' }}>
             {/* 레버 베이스 (슬롯머신 본체에 붙는 부분) */}
-            <div className="absolute top-0 left-0 w-6 h-16 bg-[#b32d00] rounded-r-md border-y-2 border-r-2 border-[#802000] z-20"></div>
-            
+            <div className="absolute top-0 left-0 w-5 sm:w-6 h-12 sm:h-16 bg-[#b32d00] rounded-r-md border-y-2 border-r-2 border-[#802000] z-20"></div>
+
             {/* 레버 막대 (회전 축 지정) */}
-            <div 
-              className="absolute left-[8px] w-3.5 h-24 origin-bottom transition-all duration-300 ease-in-out z-10"
-              style={{ 
-                /* 베이스(h-16, 중심 32px)의 중앙에서 뻗어나오도록 막대(h-24, 96px)의 top 위치를 계산 (32px - 96px = -64px) */
+            <div
+              className="absolute left-[6px] sm:left-[8px] w-3 sm:w-3.5 h-18 sm:h-24 origin-bottom transition-all duration-300 ease-in-out z-10"
+              style={{
                 top: '-64px',
                 transform: isLeverPulled ? 'rotateX(170deg)' : 'rotateX(0deg)'
               }}
             >
               <div className="w-full h-full bg-gradient-to-r from-gray-400 via-gray-200 to-gray-500 rounded-full shadow-inner"></div>
-              
+
               {/* 레버 손잡이 (빨간 공) */}
-              <div className="absolute -top-4 -left-[11px] w-9 h-9 bg-gradient-to-br from-red-500 to-red-700 rounded-full shadow-[0_4px_8px_rgba(0,0,0,0.6)] border-2 border-red-800"></div>
+              <div className="absolute -top-3 sm:-top-4 -left-[9px] sm:-left-[11px] w-7 sm:w-9 h-7 sm:h-9 bg-gradient-to-br from-red-500 to-red-700 rounded-full shadow-[0_4px_8px_rgba(0,0,0,0.6)] border-2 border-red-800"></div>
             </div>
           </div>
 
           {/* 슬롯머신 본체 (빨간/오렌지색 계열) */}
-          <div className="bg-[#ff4500] rounded-[2rem] p-4 sm:p-5 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),auto,0_10px_10px_-5px_rgba(0,0,0,0.5)] relative border-b-[12px] border-[#cc3700] z-10 mx-auto">
+          <div className="bg-[#ff4500] rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-5 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),auto,0_10px_10px_-5px_rgba(0,0,0,0.5)] relative border-b-[8px] sm:border-b-[12px] border-[#cc3700] z-10 mx-auto">
             
             {/* 내부 하얀색/아이보리색 화면 프레임 */}
-            <div className="bg-[#fffaf0] rounded-xl p-4 sm:p-5 relative border-[5px] border-[#ff7a33] shadow-[inset_0_4px_10px_rgba(0,0,0,0.1)] flex flex-col items-center">
+            <div className="bg-[#fffaf0] rounded-xl p-3 sm:p-5 relative border-[3px] sm:border-[5px] border-[#ff7a33] shadow-[inset_0_4px_10px_rgba(0,0,0,0.1)] flex flex-col items-center">
               
               {/* 전구 장식물 (도트 보더를 통한 카지노 라이트) */}
               <div className="absolute inset-1.5 border-[6px] border-dotted border-[#ffcc22] rounded-[10px] opacity-100 animate-casino-lights pointer-events-none"></div>
 
               {/* 상단 라벨 */}
-              <div className="bg-[#ff4500] text-white px-6 py-2 rounded-full text-xl sm:text-2xl font-black tracking-wide mb-5 z-10 shadow-md border-2 border-[#cc3700] mt-1" style={{ fontFamily: 'GmarketSans, sans-serif' }}>
+              <div className="bg-[#ff4500] text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-base sm:text-2xl font-black tracking-wide mb-3 sm:mb-5 z-10 shadow-md border-2 border-[#cc3700] mt-1" style={{ fontFamily: 'GmarketSans, sans-serif' }}>
                 오늘 뭐먹지?
               </div>
 
@@ -91,8 +90,8 @@ export default function SlotMachine({ restaurants, lastResult, onComplete, onClo
             </div>
             
             {/* 하단 레터링 */}
-            <div className="text-center mt-6 mb-3">
-              <p className="text-white text-xl sm:text-2xl font-black tracking-[0.2em] drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" style={{ fontFamily: 'GmarketSans, sans-serif' }}>
+            <div className="text-center mt-3 sm:mt-6 mb-2 sm:mb-3">
+              <p className="text-white text-base sm:text-2xl font-black tracking-[0.2em] drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" style={{ fontFamily: 'GmarketSans, sans-serif' }}>
                 돌려돌려밥!
               </p>
             </div>
@@ -102,7 +101,7 @@ export default function SlotMachine({ restaurants, lastResult, onComplete, onClo
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="w-full py-4 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-2xl font-bold transition-all backdrop-blur-md border border-white/20"
+          className="w-full py-3 sm:py-4 text-sm sm:text-base bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-2xl font-bold transition-all backdrop-blur-md border border-white/20"
           aria-label="닫기"
         >
           그만 돌리기 (취소)

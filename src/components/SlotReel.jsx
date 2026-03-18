@@ -52,8 +52,8 @@ export default function SlotReel({ items, finalItem, isSpinning, onStop }) {
       style={{ height: SLOT_ITEM_HEIGHT }}
     >
       {/* 릴 상단 및 하단 그림자 (원통 질감용 입체감) */}
-      <div className="absolute top-0 inset-x-0 h-6 bg-gradient-to-b from-black/40 to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-4 sm:h-6 bg-gradient-to-b from-black/40 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-4 sm:h-6 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
 
       {/* 가운데 하이라이트/포커스 기준선 (옵션 - 원하면 살릴 수 있음) */}
       {/* <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[50px] border-y-2 border-red-500/30 z-10 pointer-events-none" /> */}
@@ -76,7 +76,7 @@ export default function SlotReel({ items, finalItem, isSpinning, onStop }) {
             style={{ height: SLOT_ITEM_HEIGHT }}
           >
             {/* 식당 이름 (릴에 적힌 숫자/텍스트 느낌) */}
-            <p className="text-2xl sm:text-[28px] font-black text-[#1a1a1a] truncate w-full tracking-tighter" style={{ fontFamily: 'var(--font-gmarket), sans-serif' }}>
+            <p className="text-lg sm:text-[28px] font-black text-[#1a1a1a] truncate w-full tracking-tighter" style={{ fontFamily: 'var(--font-gmarket), sans-serif' }}>
               {item.place_name}
             </p>
             {/* 카테고리 (하단 작은 글씨) */}
