@@ -45,8 +45,14 @@ export default function ResultCard({ restaurant, onClose, onRespin }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 animate-slide-up">
       <div className="bg-white rounded-t-2xl shadow-2xl p-5 max-w-[500px] mx-auto max-h-[80vh] overflow-y-auto">
-        {/* 드래그 핸들 */}
-        <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+        {/* 드래그 핸들 — 탭하면 바텀시트 닫기 */}
+        <button
+          onClick={onClose}
+          className="w-full flex justify-center py-2 -mt-2 mb-2 cursor-pointer"
+          aria-label="닫기"
+        >
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </button>
 
         {/* 식당 정보 */}
         <div className="space-y-2">
